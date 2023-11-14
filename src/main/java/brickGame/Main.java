@@ -190,6 +190,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
     }
 
+    //github test
     private void initBoard() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < level + 1; j++) {
