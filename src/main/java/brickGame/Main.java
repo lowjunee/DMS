@@ -4,17 +4,20 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -87,6 +90,8 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
     private boolean loadFromSave = false;
 
+    private VBox pauseMenu;
+
     Stage  primaryStage;
     Button load    = null;
     Button newGame = null;
@@ -94,6 +99,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
+        createPauseMenu();
 
 
         if (!loadFromSave) {
@@ -109,6 +115,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
             initBall();
             initBreak();
             initBoard();
+
 
             load = new Button("Load Game");
             newGame = new Button("Start New Game");
@@ -190,7 +197,42 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
     }
 
-    //github test
+    private void createPauseMenu() {
+        pauseMenu = new VBox(10); // Spacing of 10 between elements
+        pauseMenu.setAlignment(Pos.CENTER); // Aligning items to the center
+
+        Button resumeButton = new Button("Resume");
+        Button saveButton = new Button("Save Game");
+        Button exitButton = new Button("Exit");
+
+        // Event handlers for buttons
+        resumeButton.setOnAction(event -> togglePause());
+        saveButton.setOnAction(event -> saveGame()); // Implement saveGame method
+        exitButton.setOnAction(event -> exitGame()); // Implement exitGame method
+
+        pauseMenu.getChildren().addAll(resumeButton, saveButton, exitButton);
+        pauseMenu.setVisible(false); // Hide the pause menu initially
+    }
+
+    private void exitGame() {
+    }
+
+
+    
+
+    private void togglePause() {
+        // Implement game pausing and resuming logic
+        boolean isPaused = !pauseMenu.isVisible();
+        pauseMenu.setVisible(isPaused);
+        if (isPaused) {
+            engine.pause();
+        } else {
+            engine.resume();
+        }
+    }
+
+
+    //Initializing board with random number for block type
     private void initBoard() {
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < level + 1; j++) {
@@ -220,10 +262,15 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
     }
 
 
+
     public static void main(String[] args) {
         launch(args);
     }
 
+
+
+
+    //Keyboard Input
     @Override
     public void handle(KeyEvent event) {
         switch (event.getCode()) {
@@ -240,6 +287,9 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
             case S:
                 saveGame();
                 break;
+        }
+        if (event.getCode() == KeyCode.ESCAPE || event.getCode() == KeyCode.P) {
+            togglePause();
         }
     }
 
@@ -312,8 +362,8 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
     private boolean collideToLeftBlock = false;
     private boolean collideToTopBlock = false;
 
-    private double vX = 1.000;
-    private double vY = 1.000;
+    private double vX = 2.000;
+    private double vY = 2.000;
 
 
     private void resetCollideFlags() {
@@ -332,24 +382,29 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
     private void setPhysicsToBall() {
         //v = ((time - hitTime) / 1000.000) + 1.000;
 
+        v = 1.000;
         if (goDownBall) {
-            yBall += vY;
+            yBall += vY; //down
         } else {
-            yBall -= vY;
+            yBall -= vY; //up
         }
+
 
         if (goRightBall) {
-            xBall += vX;
+            xBall += vX; //right
         } else {
-            xBall -= vX;
+            xBall -= vX; //left
         }
 
+        //Collision with top boundary
         if (yBall <= 0) {
             //vX = 1.000;
             resetCollideFlags();
             goDownBall = true;
             return;
         }
+
+        //Collision with bottom boundary
         if (yBall >= sceneHeight) {
             goDownBall = false;
             if (!isGoldStatus) {
@@ -366,6 +421,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
             //return;
         }
 
+        //Collision with paddle
         if (yBall >= yBreak - ballRadius) {
             //System.out.println("Collide1");
             if (xBall >= xBreak && xBall <= xBreak + breakWidth) {
@@ -380,10 +436,10 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
                     //vX = 0;
                     vX = Math.abs(relation);
                 } else if (Math.abs(relation) > 0.3 && Math.abs(relation) <= 0.7) {
-                    vX = (Math.abs(relation) * 1.5) + (level / 3.500);
+                    vX = (Math.abs(relation) * 1.2);
                     //System.out.println("vX " + vX);
                 } else {
-                    vX = (Math.abs(relation) * 2) + (level / 3.500);
+                    vX = (Math.abs(relation) * 1.5);
                     //System.out.println("vX " + vX);
                 }
 
