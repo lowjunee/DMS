@@ -141,6 +141,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
         for (Block block : blocks) {
             root.getChildren().add(block.rect);
         }
+        root.getChildren().add(pauseMenu);
         Scene scene = new Scene(root, sceneWidth, sceneHeight);
         scene.getStylesheets().add("style.css");
         scene.setOnKeyPressed(this);
@@ -197,24 +198,32 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
     }
 
+    //***PAUSE  MENU//
     private void createPauseMenu() {
-        pauseMenu = new VBox(10); // Spacing of 10 between elements
-        pauseMenu.setAlignment(Pos.CENTER); // Aligning items to the center
+        pauseMenu = new VBox(20); // Spacing of 10 between elements
+
 
         Button resumeButton = new Button("Resume");
         Button saveButton = new Button("Save Game");
         Button exitButton = new Button("Exit");
 
-        // Event handlers for buttons
+        pauseMenu.setAlignment(Pos.CENTER);
+        pauseMenu.setLayoutX((sceneWidth - pauseMenu.getWidth()) / 2);
+        pauseMenu.setLayoutY((sceneHeight - pauseMenu.getHeight()) / 2);
+
         resumeButton.setOnAction(event -> togglePause());
-        saveButton.setOnAction(event -> saveGame()); // Implement saveGame method
-        exitButton.setOnAction(event -> exitGame()); // Implement exitGame method
+        saveButton.setOnAction(event -> saveGame());
+        exitButton.setOnAction(event -> exitGame());
 
         pauseMenu.getChildren().addAll(resumeButton, saveButton, exitButton);
         pauseMenu.setVisible(false); // Hide the pause menu initially
     }
 
     private void exitGame() {
+        if (engine != null) {
+            engine.stop();
+            Platform.exit();
+        }
     }
 
 
@@ -489,7 +498,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
         }
 
         if (collideToLeftBlock) {
-            goRightBall = true;
+            goRightBall = false;
         }
 
         if (collideToTopBlock) {
@@ -562,7 +571,9 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
                     outputStream.writeObject(blockSerializables);
 
+
                     new Score().showMessage("Game Saved", Main.this);
+
 
 
                 } catch (FileNotFoundException e) {
@@ -710,6 +721,8 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
                 }
             }
         });
+
+
 
 
         if (yBall >= Block.getPaddingTop() && yBall <= (Block.getHeight() * (level + 1)) + Block.getPaddingTop()) {
