@@ -65,17 +65,17 @@ public class GameEngine {
         }
     }
 
-    public void pause() {
-        updateTimeline.pause();
-        physicsTimeline.pause();
-        timeTimeline.pause();
-    }
-
-    public void resume() {
-        updateTimeline.play();
-        physicsTimeline.play();
-        timeTimeline.play();
-    }
+//    public void pause() {
+//        updateTimeline.pause();
+//        physicsTimeline.pause();
+//        timeTimeline.pause();
+//    }
+//
+//    public void resume() {
+//        updateTimeline.play();
+//        physicsTimeline.play();
+//        timeTimeline.play();
+//    }
 
     public interface OnAction {
         void onUpdate();

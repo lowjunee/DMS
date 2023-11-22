@@ -25,9 +25,7 @@ import java.util.Random;
 
 public class Main extends Application implements EventHandler<KeyEvent>, GameEngine.OnAction {
 
-
-    private int level = 0;
-
+    private int level = 1;
     private double xBreak = 0.0f;
     private double centerBreakX;
     private double yBreak = 640.0f;
@@ -99,49 +97,78 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
     @Override
     public void start(Stage primaryStage) throws Exception {
         this.primaryStage = primaryStage;
-        createPauseMenu();
-
-
-        if (!loadFromSave) {
-            level++;
-            if (level >1){
-                new Score().showMessage("Level Up :)", this);
-            }
-            if (level == 18) {
-                new Score().showWin(this);
-                return;
-            }
-
-            initBall();
-            initBreak();
-            initBoard();
-
-
-            load = new Button("Load Game");
-            newGame = new Button("Start New Game");
-            load.setTranslateX(220);
-            load.setTranslateY(300);
-            newGame.setTranslateX(220);
-            newGame.setTranslateY(340);
-
-        }
-
-
         root = new Pane();
+        setUpScene();
+        createPauseMenu();
+        engine = new GameEngine();
+        engine.setOnAction(this);
+        engine.setFps(120);
+
+        initBall();
+        initBreak();
+        initBoard();
+
+        load = new Button("Load Game");
+        newGame = new Button("Start New Game");
+        load.setTranslateX(220);
+        load.setTranslateY(300);
+        newGame.setTranslateX(220);
+        newGame.setTranslateY(340);
         scoreLabel = new Label("Score: " + score);
         levelLabel = new Label("Level: " + level);
         levelLabel.setTranslateY(20);
         heartLabel = new Label("Heart : " + heart);
         heartLabel.setTranslateX(sceneWidth - 70);
-        if (!loadFromSave) {
-            root.getChildren().addAll(rect, ball, scoreLabel, heartLabel, levelLabel, newGame);
-        } else {
-            root.getChildren().addAll(rect, ball, scoreLabel, heartLabel, levelLabel);
-        }
+
+        root.getChildren().addAll(rect, ball, scoreLabel, heartLabel, levelLabel, newGame, pauseMenu);
+
         for (Block block : blocks) {
             root.getChildren().add(block.rect);
         }
-        root.getChildren().add(pauseMenu);
+        //LOAD GAME
+        load.setOnAction(event -> {
+                loadGame();
+                load.setVisible(false);
+                newGame.setVisible(false);
+        });
+        //NEW GAME
+        newGame.setOnAction(event -> {
+            engine = new GameEngine();
+            engine.setOnAction(Main.this);
+            engine.setFps(120);
+            engine.start();
+            load.setVisible(false);
+            newGame.setVisible(false);
+        });
+    }
+
+    private void nextLevelScene(){
+        level++;
+        if (level >1){
+            new Score().showMessage("Level Up :)", this);
+        }
+        if (level == 18) {
+            new Score().showWin(this);
+        }
+        blocks.clear();
+        initBoard();
+        for (Block block : blocks) {
+            root.getChildren().add(block.rect);
+        }
+        engine.start();
+    }
+    private void loadScene(){
+        scoreLabel = new Label("Score: " + score);
+        levelLabel = new Label("Level: " + level);
+        levelLabel.setTranslateY(20);
+        heartLabel = new Label("Heart : " + heart);
+        heartLabel.setTranslateX(sceneWidth - 70);
+        root.getChildren().addAll(rect, ball, scoreLabel, heartLabel, levelLabel, pauseMenu);
+
+        engine.start();
+        loadFromSave = false;
+    }
+    private void setUpScene(){
         Scene scene = new Scene(root, sceneWidth, sceneHeight);
         scene.getStylesheets().add("style.css");
         scene.setOnKeyPressed(this);
@@ -150,58 +177,14 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        if (!loadFromSave) {
-            if (level > 1 && level < 18) {
-                load.setVisible(false);
-                newGame.setVisible(false);
-                engine = new GameEngine();
-                engine.setOnAction(this);
-                engine.setFps(120);
-                engine.start();
-            }
-
-            //LOAD GAME
-
-            load.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    loadGame();
-
-                    load.setVisible(false);
-                    newGame.setVisible(false);
-                }
-            });
-
-
-            //NEW GAME
-
-            newGame.setOnAction(new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent event) {
-                    engine = new GameEngine();
-                    engine.setOnAction(Main.this);
-                    engine.setFps(120);
-                    engine.start();
-
-                    load.setVisible(false);
-                    newGame.setVisible(false);
-                }
-            });
-        } else {
-            engine = new GameEngine();
-            engine.setOnAction(this);
-            engine.setFps(120);
-            engine.start();
-            loadFromSave = false;
-        }
-
+    }
+    private void start() {
 
     }
 
     //***PAUSE  MENU//
     private void createPauseMenu() {
         pauseMenu = new VBox(20); // Spacing of 10 between elements
-
 
         Button resumeButton = new Button("Resume");
         Button saveButton = new Button("Save Game");
@@ -234,9 +217,9 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
         boolean isPaused = !pauseMenu.isVisible();
         pauseMenu.setVisible(isPaused);
         if (isPaused) {
-            engine.pause();
+            engine.stop();
         } else {
-            engine.resume();
+            engine.start();
         }
     }
 
@@ -635,7 +618,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
 
         try {
             loadFromSave = true;
-            start(primaryStage);
+            loadScene();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -657,16 +640,14 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
                     isGoldStatus = false;
                     isExistHeartBlock = false;
 
-
                     hitTime = 0;
                     time = 0;
                     goldTime = 0;
 
-                    engine.stop();
                     blocks.clear();
                     chocolate.clear();
                     destroyedBlockCount = 0;
-                    start(primaryStage);
+                    nextLevelScene();
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -708,6 +689,7 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
             @Override
             public void run() {
 
+                levelLabel.setText("Level: " + level);
                 scoreLabel.setText("Score: " + score);
                 heartLabel.setText("Heart : " + heart);
 
@@ -722,15 +704,14 @@ public class Main extends Application implements EventHandler<KeyEvent>, GameEng
             }
         });
 
-
-
-
-        if (yBall >= Block.getPaddingTop() && yBall <= (Block.getHeight() * (level + 1)) + Block.getPaddingTop()) {
+        if (yBall + ballRadius >= Block.getPaddingTop()
+                && yBall + ballRadius
+                <= (Block.getHeight() * (level + 1)) + Block.getPaddingTop()) {
             for (final Block block : blocks) {
-                int hitCode = block.checkHitToBlock(xBall, yBall);
+                int hitCode = block.checkHitToBlock(xBall, yBall, ballRadius);
                 if (hitCode != Block.NO_HIT) {
                     score += 1;
-
+                    System.out.println(hitCode);
                     new Score().show(block.x, block.y, 1, this);
 
                     block.rect.setVisible(false);

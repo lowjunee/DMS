@@ -80,25 +80,25 @@ public class Block implements Serializable {
     }
 
 
-    public int checkHitToBlock(double xBall, double yBall) {
+    public int checkHitToBlock(double xBall, double yBall, int ballRadius) {
 
         if (isDestroyed) {
             return NO_HIT;
         }
 
-        if (xBall >= x && xBall <= x + width && yBall == y + height) {
+        if (xBall + ballRadius >= x && xBall <= x + width && yBall == y + height) {
             return HIT_BOTTOM;
         }
 
-        if (xBall >= x && xBall <= x + width && yBall == y) {
+        if (xBall + ballRadius >= x && xBall <= x + width && yBall == y) {
             return HIT_TOP;
         }
 
-        if (yBall >= y && yBall <= y + height && xBall == x + width) {
+        if (yBall + ballRadius >= y && yBall <= y + height && xBall == x + width) {
             return HIT_RIGHT;
         }
 
-        if (yBall >= y && yBall <= y + height && xBall == x) {
+        if (yBall + ballRadius >= y && yBall <= y + height && xBall == x) {
             return HIT_LEFT;
         }
 
