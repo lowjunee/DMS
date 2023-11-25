@@ -7,7 +7,7 @@ import javafx.util.Duration;
 public class GameEngine {
 
     private OnAction onAction;
-    private double fps = 15;
+    private double fps = 120;
     private Timeline updateTimeline;
     private Timeline physicsTimeline;
     private Timeline timeTimeline;
@@ -44,26 +44,34 @@ public class GameEngine {
         timeTimeline.setCycleCount(Timeline.INDEFINITE);
     }
 
-    public void start() {
-        if (isStopped) {
-            time = 0;
-            initializeTimelines();
-            onAction.onInit();
-            updateTimeline.play();
-            physicsTimeline.play();
-            timeTimeline.play();
-            isStopped = false;
-        }
+
+    // ... other members and methods ...
+
+    public boolean isStopped() {
+        return isStopped;
     }
 
-    public void stop() {
-        if (!isStopped) {
-            isStopped = true;
-            updateTimeline.stop();
-            physicsTimeline.stop();
-            timeTimeline.stop();
+
+        public void start () {
+            if (isStopped) {
+                time = 0;
+                initializeTimelines();
+                onAction.onInit();
+                updateTimeline.play();
+                physicsTimeline.play();
+                timeTimeline.play();
+                isStopped = false;
+            }
         }
-    }
+
+        public void stop () {
+            if (!isStopped) {
+                isStopped = true;
+                updateTimeline.stop();
+                physicsTimeline.stop();
+                timeTimeline.stop();
+            }
+        }
 
 //    public void pause() {
 //        updateTimeline.pause();
@@ -76,6 +84,7 @@ public class GameEngine {
 //        physicsTimeline.play();
 //        timeTimeline.play();
 //    }
+
 
     public interface OnAction {
         void onUpdate();
